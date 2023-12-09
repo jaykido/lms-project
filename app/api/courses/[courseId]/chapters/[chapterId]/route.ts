@@ -9,6 +9,98 @@ const { Video } = new Mux(
   process.env.MUX_TOKEN_SECRET!
 );
 
+export async function DELETE(
+  req: Request,
+  { params }: { params: { courseId: string; chapterId: string } }
+) {
+  try {
+    console.log(
+      `The CourseId and ChapterId are here: ${params.courseId},=> ${params.chapterId} `
+    );
+    const { userId } = auth();
+
+    if (!userId) {
+      return new NextResponse("Unauthorized entry", { status: 401 });
+    }
+
+    const courseOwner = await db.course.findUnique({
+      where: {
+        id: params.courseId,
+        userId,
+      },
+    });
+
+    if (!courseOwner) {
+      return new NextResponse("Unauthorized entry", { status: 401 });
+    }
+
+    const chapter = await db.chapter.findUnique({
+      where: {
+        id: params.chapterId,
+        courseId: params.courseId,
+      },
+    });
+
+    if (!chapter) {
+      return new NextResponse("Not Found!", { status: 404 });
+    }
+
+    if (chapter.videoUrl) {
+      const existingMuxData = await db.muxData.findUnique({
+        where: {
+          chapterId: params.chapterId,
+        },
+      });
+
+      console.log("The existinfMuxData: ", existingMuxData);
+
+      if (existingMuxData) {
+        await Video.Assets.del(existingMuxData.assetId);
+        await db.muxData.delete({
+          where: {
+            id: existingMuxData.id,
+          },
+        });
+      }
+    }
+
+    const deletedChapter = await db.chapter.delete({
+      where: {
+        id: params.chapterId,
+      },
+    });
+
+    const allPublishedChapters = await db.chapter.findMany({
+      where: {
+        courseId: params.courseId,
+        isPublished: true,
+      },
+    });
+
+    if (!allPublishedChapters.length) {
+      await db.course.update({
+        where: {
+          id: params.courseId,
+        },
+        data: {
+          isPublished: false,
+        },
+      });
+    }
+
+    return NextResponse.json(deletedChapter);
+  } catch (error) {
+    const typedError = error as Error | undefined;
+
+    console.error(
+      "[CHAPTER_ID_DELETE]",
+      typedError?.message ?? "Unknown error"
+    );
+    console.error(typedError?.stack ?? "No stack trace available");
+    return new NextResponse("Internal Error", { status: 500 });
+  }
+}
+
 export async function PATCH(
   req: Request,
   { params }: { params: { courseId: string; chapterId: string } }
