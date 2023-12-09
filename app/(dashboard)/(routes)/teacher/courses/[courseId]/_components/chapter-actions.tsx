@@ -39,6 +39,7 @@ export const ChapterActions = ({
         );
         toast.success("Chapter has been Published Successfully");
       }
+      router.refresh();
     } catch {
       toast.error("Something Went terribly 😢");
     } finally {
