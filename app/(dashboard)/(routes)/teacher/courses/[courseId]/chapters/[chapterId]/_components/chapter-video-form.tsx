@@ -2,14 +2,15 @@
 
 import * as z from "zod";
 import axios from "axios";
-
-import { Button } from "@/components/ui/button";
-import { ImageIcon, Pencil, PlusCircle, Video } from "lucide-react";
+import MuxPlayer from "@mux/mux-player-react";
+import { Pencil, PlusCircle, Video } from "lucide-react";
 import { useState } from "react";
 import toast from "react-hot-toast";
 import { useRouter } from "next/navigation";
 import { Chapter, MuxData } from "@prisma/client";
 import Image from "next/image";
+
+import { Button } from "@/components/ui/button";
 import { FileUpload } from "@/components/file-upload";
 
 interface ChapterVideoFormProps {
@@ -36,33 +37,33 @@ export const ChapterVideoForm = ({
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.patch(
-        `/api/courses/${courseId}chapters/${chapterId}`,
+        `/api/courses/${courseId}/chapters/${chapterId}`,
         values
       );
-      toast.success("Chapter Updated!");
+      toast.success("Chapter updated");
       toggleEdit();
       router.refresh();
-    } catch (error) {
-      toast.error("Something Went terribly wrong 😢");
+    } catch {
+      toast.error("Something went wrong");
     }
   };
 
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Video
+        Chapter video
         <Button onClick={toggleEdit} variant="ghost">
           {isEditing && <>Cancel</>}
           {!isEditing && !initialData.videoUrl && (
             <>
               <PlusCircle className="h-4 w-4 mr-2" />
-              Add Video
+              Add a video
             </>
           )}
           {!isEditing && initialData.videoUrl && (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit
+              Edit video
             </>
           )}
         </Button>
@@ -73,7 +74,12 @@ export const ChapterVideoForm = ({
             <Video className="h-10 w-10 text-slate-500" />
           </div>
         ) : (
-          <div className="relative aspect-video mt-2">Video Uploaded</div>
+          <div className="relative aspect-video mt-2">
+            "It would have been great to get a preview window but Mux Player and
+            Hls had to be a pain in the 🍑. Wait for version 2.0 😁.. If you see
+            this just know it's Uploaded. Proceed"
+            {/* <MuxPlayer playbackId={initialData?.muxData?.playbackId || ""} /> */}
+          </div>
         ))}
       {isEditing && (
         <div>
@@ -86,13 +92,14 @@ export const ChapterVideoForm = ({
             }}
           />
           <div className="text-xs text-muted-foreground mt-4">
-            Upload the Video
+            Upload this chapter&apos;s video
           </div>
         </div>
       )}
       {initialData.videoUrl && !isEditing && (
-        <div className="text-xl text-muted-foreground mt-2">
-          Video can take a few minutes to process.
+        <div className="text-xs text-muted-foreground mt-2">
+          Videos can take a few minutes to process. Refresh the page if video
+          does not appear.
         </div>
       )}
     </div>
