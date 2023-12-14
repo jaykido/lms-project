@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs";
 import { NextResponse } from "next/server";
-import Mux from "@Mux/mux-node";
+import Mux from "@mux/mux-node";
 
 import { db } from "@/lib/db";
 
