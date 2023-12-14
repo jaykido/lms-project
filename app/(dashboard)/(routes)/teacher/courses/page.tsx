@@ -22,6 +22,11 @@ const CoursesPage = async () => {
     },
   });
 
+  if (!courses) {
+    <div>Loading...</div>;
+    return redirect("/");
+  }
+
   return (
     <div className="p-6">
       <DataTable columns={columns} data={courses} />

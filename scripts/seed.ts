@@ -12,10 +12,10 @@ async function main() {
         { name: "Photography" },
         { name: "Accounting" },
         { name: "Engineering" },
-        { name: "Agriculture" },
-        { name: "Procurement" },
         { name: "Filming" },
-        { name: "Tv/Radio Anchor" },
+        // { name: "Agriculture" },
+        // { name: "Procurement" },
+        // { name: "Tv/Radio Anchor" },
       ],
     });
     console.log("Success");

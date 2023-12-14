@@ -4,6 +4,11 @@ import * as z from "zod";
 import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
+import { Pencil } from "lucide-react";
+import { useState } from "react";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
+import { Course } from "@prisma/client";
 
 import {
   Form,
@@ -13,13 +18,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
-import { Pencil } from "lucide-react";
-import { useState } from "react";
-import toast from "react-hot-toast";
-import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { Textarea } from "@/components/ui/textarea";
-import { Course } from "@prisma/client";
 import { Combobox } from "@/components/ui/combobox";
 
 interface CategoryFormProps {
@@ -46,19 +46,20 @@ export const CategoryForm = ({
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      categoryId: initialData?.description || "", // Set a default value if initialData.description is null
+      categoryId: initialData?.categoryId || "",
     },
   });
+
   const { isSubmitting, isValid } = form.formState;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
       await axios.patch(`/api/courses/${courseId}`, values);
-      toast.success("course Updated!");
+      toast.success("Course updated");
       toggleEdit();
       router.refresh();
-    } catch (error) {
-      toast.error("Something Went terribly wrong 😢");
+    } catch {
+      toast.error("Something went wrong");
     }
   };
 
@@ -69,13 +70,14 @@ export const CategoryForm = ({
   return (
     <div className="mt-6 border bg-slate-100 rounded-md p-4">
       <div className="font-medium flex items-center justify-between">
-        Course Category
+        Course category
         <Button onClick={toggleEdit} variant="ghost">
-          {isEditing && <>Cancel</>}
-          {!isEditing && (
+          {isEditing ? (
+            <>Cancel</>
+          ) : (
             <>
               <Pencil className="h-4 w-4 mr-2" />
-              Edit
+              Edit category
             </>
           )}
         </Button>
@@ -84,10 +86,10 @@ export const CategoryForm = ({
         <p
           className={cn(
             "text-sm mt-2",
-            !initialData.categoryId && " text-slate-500 italic"
+            !initialData.categoryId && "text-slate-500 italic"
           )}
         >
-          {selectedOption?.label || "No Category"}
+          {selectedOption?.label || "No category"}
         </p>
       )}
       {isEditing && (
@@ -102,7 +104,7 @@ export const CategoryForm = ({
               render={({ field }) => (
                 <FormItem>
                   <FormControl>
-                    <Combobox options={...options} {...field} />
+                    <Combobox options={options} {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
